@@ -1,51 +1,51 @@
-# Use the latest Ubuntu image as a base
-FROM ubuntu:latest
+# Use the latest Ubuntu LTS version
+FROM ubuntu:22.04
 
-# Update the package list and install necessary packages
-RUN apt-get update && apt-get install -y \
-    git \
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=Etc/UTC \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
+
+# Update and install essential packages
+RUN apt update && apt upgrade -y && \
+    apt install -y --no-install-recommends \
+    sudo \
     curl \
     wget \
+    git \
+    vim \
     nano \
-    && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    python3 \
+    python3-pip \
+    software-properties-common \
+    net-tools \
+    iputils-ping \
+    unzip \
+    zip \
+    ca-certificates \
+    && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user and grant privileges
-RUN useradd -m appuser && usermod -aG sudo appuser
+# Create a non-root user for security
+ARG USERNAME=mehetab
+RUN useradd -m -s /bin/bash $USERNAME && \
+    echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Switch to the new user
-USER appuser
+# Set the default user
+USER $USERNAME
+WORKDIR /home/$USERNAME
 
-# Expose the port if your application needs it
-EXPOSE 80
+# Install Docker (optional but useful)
+USER root
+RUN curl -fsSL https://get.docker.com | sh
 
-# Set the working directory
-WORKDIR /app
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt install -y nodejs
 
-# Optional: Copy files from your local machine to the container
-# COPY . /app/
+# Clean up to reduce image size
+RUN apt autoremove -y && apt clean -y && rm -rf /var/lib/apt/lists/*
 
-# Run a command when the container starts
-CMD ["bash"]
-```
-
-### Explanation of the Dockerfile:
-1. **`FROM ubuntu:latest`**: Uses the latest Ubuntu image as the base.
-2. **`RUN apt-get update && ...`**: Updates the package list and installs necessary packages like `git`, `curl`, and `wget`.
-3. **`RUN useradd ...`**: Creates a non-root user (`appuser`) and grants them sudo privileges for better security.
-4. **`USER appuser`**: Switches to the newly created user.
-5. **`EXPOSE 80`**: Exposes port 80 if your application needs it.
-6. **`WORKDIR /app`**: Sets the working directory to `/app`.
-7. **`CMD ["bash"]`**: Runs the Bash shell when the container starts.
-
-### How to use this Dockerfile:
-1. **Create the Dockerfile**:
-   - Open a text editor and save the above content as `Dockerfile` (no extension).
-
-2. **Build the Docker image**:
-   ```bash
-   docker build -t my-ubuntu-server .
-   ```
-
-3. **Run the Docker container**:
-   ```bash
-   docker run -it -p 80:80 my-ubuntu-server
+# Default command
+CMD ["/bin/bash"]
