@@ -1,0 +1,16 @@
+services:
+  - name: ubuntu-container
+    type: web
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    envVars:
+      - key: USERNAME
+        value: mehetab
+      - key: PASSWORD
+        value: 123456
+    autoDeploy: false
+    rootDir: .
+    buildCommand: echo "Build successful"
+    startCommand: /bin/bash
