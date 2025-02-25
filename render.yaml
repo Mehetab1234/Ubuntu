@@ -1,11 +1,1 @@
 yaml
-  - type: web
-    name: ubuntu-server
-    env: docker
-    docker:
-      context: .
-      dockerfile: Dockerfile
-    envVars:
-      - KEY: VALUE
-    ports:
-      - "80:"
