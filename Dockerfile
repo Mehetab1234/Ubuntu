@@ -27,9 +27,12 @@ RUN apt update && apt upgrade -y && \
     ca-certificates \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user for security
+# Create a non-root user with a password
 ARG USERNAME=mehetab
+ARG PASSWORD=123456
 RUN useradd -m -s /bin/bash $USERNAME && \
+    echo "$USERNAME:$PASSWORD" | chpasswd && \
+    usermod -aG sudo $USERNAME && \
     echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Set the default user
@@ -43,6 +46,9 @@ RUN curl -fsSL https://get.docker.com | sh
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt install -y nodejs
+
+# Expose a port (if needed)
+EXPOSE 8080
 
 # Clean up to reduce image size
 RUN apt autoremove -y && apt clean -y && rm -rf /var/lib/apt/lists/*
